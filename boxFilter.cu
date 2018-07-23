@@ -1,7 +1,7 @@
 #include <iostream>
-#include "gpu.hpp"
+//#include "gpu.hpp"
 
-__global__ void
+/*__global__ void
 filter(unsigned int *input, unsigned int *od, int w, int h, int r)
 {
 
@@ -40,4 +40,4 @@ double boxFilterRGBA(unsigned int *d_src, unsigned int *d_temp, unsigned int *d_
     }
 
     return ((dKernelTime/1000.)/(double)iterations);
-}
+}*/
