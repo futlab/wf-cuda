@@ -26,5 +26,6 @@ if(${GTest_FOUND})
     target_link_libraries(wf-test
         ${GTEST_LIBRARIES}
         ${OpenCV_LIBS}
+        ${OpenCV_LIBRARIES}
     )
 endif()
