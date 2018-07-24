@@ -20,6 +20,7 @@ include_directories(
 set(sources
     cameramodel.h
     kalmanline.h
+    filters.h
 )
 
 if(${GTest_FOUND})
@@ -31,7 +32,7 @@ if(${GTest_FOUND})
         test/test_cameramodel.cpp
         test/test_kalmanline.cpp
         utils.cpp       utils.h
-        "boxFilter.cu"
+        "filters.cu"
     )
     target_link_libraries(wf-test
         ${GTEST_LIBRARIES}
