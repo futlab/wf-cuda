@@ -1,7 +1,29 @@
 #include "filters.h"
-#include <vector>
-using namespace std;
-#include <opencv2/gpu/gpu.hpp>
+//#include <vector>
+//using namespace std;
+//#include <opencv2/gpu/gpu.hpp>
+//#include <opencv2/cudaimgproc.hpp>
+
+
+
+// blockDim - local size
+// blockIdx - group id
+// threadIdx - local id
+
+typedef unsigned char uchar;
+
+template <typename SRC, typename DST>
+__global__ void mad(const SRC *src, DST *dst, uint size, int a, int b)
+{
+    for (uint i = blockIdx.x * blockDim.x + threadIdx.x; i < size; i += blockDim.x * gridDim.x)
+        dst[i] = a * src[i] + b;
+}
+
+void execMad(const MatBuffer &src, MatBuffer &dst, int a, int b)
+{
+    assert(src.size() == dst.size());
+    mad<uchar, uchar><<<720 * 1280 / 32, 32>>>((const uchar *)src.data(), (uchar *)dst.data(), src.bytesCount(), a, b);
+}
 
 template <typename SRC, typename DST>
 __global__ void diffint(const SRC *ghv, DST * result, uint width, uint height)
@@ -9,7 +31,7 @@ __global__ void diffint(const SRC *ghv, DST * result, uint width, uint height)
     ghv += mul24(width * 2, threadIdx.x); //  get_global_id(0)
     result += mul24(width, (uint)threadIdx.x) + (uint)8;
 
-    short buffer[16], bufferv[16];
+    SRC buffer[16], bufferv[16];
     for (int x = 0; x < 16; x++, ghv += 2) {
         buffer[x] = ghv[0];
         bufferv[x] = ghv[1];
@@ -21,13 +43,13 @@ __global__ void diffint(const SRC *ghv, DST * result, uint width, uint height)
             int a = buffer[7 - d], b = buffer[8 + d];//, m = max(abs(a), abs(b));
             sa += a;
             sb += b;
-            sv += abs(bufferv[7 - d]) + abs(bufferv[8 + d]);
+            sv += __sad(bufferv[7 - d], 0, __sad(bufferv[8 + d], 0, 0));
             if (abs(a) > 250 && abs(b) > 250)
                 count++;
             else if (count)
                 break;
         }
-        int ad = abs(sa - sb), m = 2 * max(abs(sa), abs(sb));
+        int ad = __sad(sa, sb, 0), m = 2 * max(abs(sa), abs(sb));
         //if (sv > abs(sa) + abs(sb)) count = 0;
         uchar r = 255 * ad / m;
         *result = (count && r > 200 && sv < m) ? d * 31 : 0;
@@ -42,7 +64,8 @@ __global__ void diffint(const SRC *ghv, DST * result, uint width, uint height)
 
 void execDiffint(const cv::cuda::GpuMat &src, cv::cuda::GpuMat &dst)
 {
-    diffint<uchar, uchar> <<<src.rows / 32, 32>>>((const uchar *)src.data, (uchar *)dst.data, src.cols, src.rows);
+    typedef unsigned char uchar;
+    //diffint<uchar, uchar> <<<src.rows / 32, 32>>>((const uchar *)src.data, (uchar *)dst.data, src.cols, src.rows);
 }
 
 

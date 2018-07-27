@@ -2,8 +2,13 @@ cmake_minimum_required(VERSION 3.5.1)
 
 project(wf-cuda)
 
+option(TEST_WITH_GUI "Test with GUI" OFF)
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set (CMAKE_CXX_FLAGS "--std=c++11")
+set(CUDA_PROPAGATE_HOST_FLAGS ON)
 
 find_package(OpenCV REQUIRED)
 find_package(CUDA REQUIRED)
@@ -17,7 +22,13 @@ include_directories(
     ${Eigen3_INCLUDE_DIRS}
 )
 
+if(${TEST_WITH_GUI})
+    add_definitions(-DTEST_WITH_GUI)
+endif()
+
+
 set(sources
+    cuda_utils.cpp  cuda_utils.h
     cameramodel.h
     kalmanline.h
     filters.h
@@ -31,6 +42,7 @@ if(${GTest_FOUND})
         test/test_gpu.cpp
         test/test_cameramodel.cpp
         test/test_kalmanline.cpp
+        test/test_filters.cpp
         utils.cpp       utils.h
         "filters.cu"
     )
