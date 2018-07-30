@@ -28,6 +28,7 @@ public:
         void fill(uint value = 0);
         void write(const cv::Mat &source);
         void copyTo(MatBuffer &buf) const;
+        ~MatBuffer();
 };
 
 

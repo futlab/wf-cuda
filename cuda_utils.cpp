@@ -49,3 +49,9 @@ void MatBuffer::copyTo(MatBuffer &buf) const
 {
 
 }
+
+MatBuffer::~MatBuffer()
+{
+    if (devPtr_)
+        cudaFree(devPtr_);
+}

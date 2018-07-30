@@ -25,6 +25,68 @@ void execMad(const MatBuffer &src, MatBuffer &dst, int a, int b)
     mad<uchar, uchar><<<720 * 1280 / 32, 32>>>((const uchar *)src.data(), (uchar *)dst.data(), src.bytesCount(), a, b);
 }
 
+double boxFilterRGBA(const unsigned int *d_src, unsigned int *d_temp, unsigned int *d_dest, int width, int height,
+                     int radius, int iterations, int nthreads);
+
+#define checkCudaErrors(err)           __checkCudaErrors (err, __FILE__, __LINE__)
+
+inline void __checkCudaErrors(cudaError err, const char *file, const int line);
+
+
+double BlurFilter::boxFilter(const MatBuffer &src, MatBuffer &dst, int radius, int iterations)
+{
+    assert(src.size() == dst.size() && src.type() == CV_8UC4 && dst.type() == CV_8UC4);
+    boxFilterRGBA((const unsigned int*)src.data(), d_temp, (unsigned int*)dst.data(), src.size().width, src.size().height, radius, iterations, 32);
+}
+
+BlurFilter::BlurFilter(const cv::Size &size) {
+    checkCudaErrors(cudaMalloc((void **) &d_temp, (size.area() * sizeof(unsigned int))));
+
+}
+
+
+
+/*template <typename SRC, typename DST, int R, int C>
+__device__ void blurRowPass(const SRC *src, DST *dst, int width, int height)
+{
+    int d = C * width * (blockIdx.x * blockDim.x + threadIdx.x);
+    src += d;
+    dst += d;
+    DST t[C];
+    for (int c = 0; c < C; c++)
+        t[c] = src[c] * (R + 1);
+    for (int x = 1; x < r + 1; x++) {
+        for (int c = 0; c < C; c++)
+            t[c] += src[c];
+        src += C;
+    }
+    for (int x = 0; ) {
+        for (int c = 0; c < C; c++)
+            dst[c] = t[c];
+        
+        for (int c = 0; c < C; c++)
+            
+        
+        dst += C;
+        src += C;
+    }
+        
+    
+
+}
+
+
+template <typename SRC, typename DST, int kernel>
+__global__ void blur(const SRC *src, DST *dst)
+{
+
+}
+
+void execBlur(const MatBuffer &src, MatBuffer &dst)
+{
+
+}*/
+
 template <typename SRC, typename DST>
 __global__ void diffint(const SRC *ghv, DST * result, uint width, uint height)
 {

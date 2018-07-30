@@ -32,6 +32,7 @@ set(sources
     cameramodel.h
     kalmanline.h
     filters.h
+    filters/box.cu
 )
 
 if(${GTest_FOUND})
